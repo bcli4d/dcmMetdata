@@ -7,7 +7,7 @@ Output result to standard out.
 """
 from __future__ import print_function
 
-from process_a_file import loadTagNames, outputFieldNames, collectDicomTags
+#from process_a_file import loadTagNames, outputFieldNames, collectDicomTags
 import os, sys
 import argparse
 import zipfile
@@ -54,19 +54,30 @@ def ignoreKeyword(args,keyword):
 
 # Append metadata collected for a series to the metadata file
 def appendMetadata(args, zip, dataset):
-    metadataset = {}
-    metadataset[zip]=dataset
+    #Add zip file name to the dataset
+    dataset['ZipFileName'] = zip
+    #Create a one element dictionary
+#    metadataset = {}
+#    metadataset[zip]=dataset
     with open(args.metadata, 'ab+') as f:
         f.seek(0, 2)  # Go to the end of file
         if f.tell() == 0:  # Check if file is empty
-            f.write('{'.encode())
-            f.write(json.dumps(metadataset).encode()[1:-1])  # If empty, write an array
+            f.write('['.encode())
+            #f.write(json.dumps(metadataset).encode()[1:-1])  # If empty, write an array
+            f.write(json.dumps(dataset).encode())  # If empty, write an array
         else:
             f.seek(-1, 2)
             f.truncate()  # Remove the last character, open the array
             f.write(' , '.encode())
-            f.write(json.dumps(metadataset).encode()[1:-1])  # Dump the dictionary
-        f.write('}'.encode())  # Close the array
+            #f.write(json.dumps(metadataset).encode()[1:-1])  # Dump the dictionary
+            f.write(json.dumps(dataset).encode())  # Dump the dictionary
+        f.write(']'.encode())  # Close the array
+
+# Add name of processed file
+def appendDones(args, zip):
+    with open(args.dones, 'a') as f:
+        f.write("{}\n".format(zip))
+
 
 # Add the data of am element to the dataset dictionary after cleaning
 def addToDataset(args, dataset, dataElement, keyword):
@@ -137,6 +148,7 @@ def processSeries(args, zip):
                 print("Ignoring tag {}; not in dictionary".format(dataElement.tag))
 
     appendMetadata(args, zip, dataset)
+    appendDones(args, zip)
     cleanupSeries(args)
 
 
@@ -169,6 +181,8 @@ def parse_args():
                         default='./ignoredTypes.txt')
     parser.add_argument("-m", "--metadata", type=str, help="path to file containing extracted metadata",
                         default='./metadata.json')
+    parser.add_argument("-d", "--dones", type=str, help="path to file containing names of processed series",
+                        default='./dones.txt')
     parser.add_argument("-s", "--scratch", type=str, help="path to scratch directory",
                         default='.')
 
