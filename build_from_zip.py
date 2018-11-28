@@ -171,8 +171,6 @@ def processSeries(args, zip):
             if not keyword in ignoredKeywords:
                 try:
                     if dataElement.value == lastDataset[dataElement.tag].value:
-                        if args.verbosity > 1:
-                            print("New  {}".format(keyword))
                         addKeyword(args, keyword)
                         addToDataset(args, dataset, dataElement, keyword)
                     else:
@@ -183,7 +181,7 @@ def processSeries(args, zip):
                     print("Instances in {} have different schemas".format(zipFileName))
                     return
             else:
-                if args.verbosity > 1:
+                if args.verbosity > 2:
                     print("Ignoring {}".format(keyword))
 
         except:
@@ -202,10 +200,14 @@ def scanZips(args):
     for zip in zips:
         global zipFileCount
         if not zip in series:
-            if args.verbosity > 1:
-                print("Previously done {}".format(zip))
             processSeries(args, zip)
             zipFileCount += 1
+        else:
+            if args.verbosity > 1:
+                print("Previously done {}".format(zip))
+
+
+    return zipFileCount
 
 # Build a list of keywords
 def loadKeywords(args):
@@ -238,6 +240,8 @@ def loadMetadata(args):
             strings = f.read()
             metadata = json.loads(strings)
     series = metadata.keys()
+    if args.verbosity > 1:
+        print("Have metadata for {} series".format(len(series)))
 
 
 # Build a list of ignored element types
@@ -297,5 +301,5 @@ if __name__ == '__main__':
     t1 = time.time()
 
     if args.verbosity > 0:
-        print("{} zip files and {} dcm files process in {} seconds".format(fileCount[1], fileCount[0], t1 - t0),
+        print("{} zip files processed in {} seconds".format(fileCount, t1 - t0),
               file=sys.stderr)
