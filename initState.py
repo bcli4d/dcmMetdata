@@ -2,6 +2,8 @@ from __future__ import print_function
 import pydicom
 import os, sys
 import json
+import time
+
 
 # Build a list of keywords
 def loadKeywords(args):
@@ -37,6 +39,9 @@ def loadMetadata(args):
                 f.seek(0)
                 strings = f.read()
                 metadata = json.loads(strings)
+    else:
+        metadata = []
+    return metadata
 
 # Get the series we've already processed
 def loadDones(args):
@@ -67,13 +72,4 @@ def loadZips(args):
         zips = set(strings)
         print("zips: {}".format(zips))
     return zips
-
-def setup(args):
-    keywords = loadKeywords(args)
-    ignoredKeywords = loadIgnoredKeywords(args)
-    ignoredTypes = loadIgnoredTypes(args)
-    #loadMetadata(args)
-    series = loadDones(args)
-    zips = loadZips(args)
-    return (keywords, ignoredKeywords, ignoredTypes, series, zips)
 

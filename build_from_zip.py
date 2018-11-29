@@ -18,7 +18,7 @@ import json
 import subprocess
 import shutil
 from cleanMetadata import cleanValue
-from initState import setup
+from initState import *
 
 zipFileCount = 0
 keywords = set()
@@ -166,6 +166,15 @@ def scanZips(args):
 
 
     return zipFileCount
+
+def setup(args):
+    keywords = loadKeywords(args)
+    ignoredKeywords = loadIgnoredKeywords(args)
+    ignoredTypes = loadIgnoredTypes(args)
+    #loadMetadata(args)
+    series = loadDones(args)
+    zips = loadZips(args)
+    return (keywords, ignoredKeywords, ignoredTypes, series, zips)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Build DICOM image metadata table")
