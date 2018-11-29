@@ -21,6 +21,9 @@ def clean_PatientSex(t):
         t = 'F'
     return t
 
+def cleanAT(value):
+    value = ''
+    return value
 
 def clean_PatientWeight(t):
     if t != '' and float(t) == 0.0:
@@ -41,6 +44,8 @@ def cleanValue(dataElement):
         value = stringifyList(args,dataElement)
     elif dataElement.VR == 'LT':
         value = remove_crlf(value)
+    elif dataElement.VR == 'AT' and dataElement.VM == 0:
+        value = cleanAT(value)
     elif dataElement.VR == 'FL':
         value = str(value)
     elif dataElement.VR == 'FD':
