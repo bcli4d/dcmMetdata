@@ -144,7 +144,7 @@ def processSeries(args, zip, keywords, ignoredKeywords):
                     if args.verbosity > 2:
                         print("New ignored keyword {}".format(keyword))
             except:
-                print("Instances in {} have different schemas".format(zipFileName))
+                print("New ignored keyword {}; not in all instances".format(keyword))
                 return
     appendMetadata(args, zip, dataset)
     writeKeywords(args, keywords)
