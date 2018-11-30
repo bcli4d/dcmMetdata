@@ -123,8 +123,8 @@ def processSeries(args, zip, keywords, ignoredKeywords):
     # not identical. Those tags are added to the notUniqueTags file.
     # Series for which there is just a single instance are treated as if all tags are
     # unique.
-    firstDataset = pydicom.read_file(os.path.join(zipFilesPath,dicoms[0]))
-    lastDataset = pydicom.read_file(os.path.join(zipFilesPath,dicoms[-1]))
+    firstDataset = pydicom.read_file(os.path.join(zipFilesPath,dicoms[0]), stop_before_pixels=True)
+    lastDataset = pydicom.read_file(os.path.join(zipFilesPath,dicoms[-1]), stop_before_pixels=True)
     dataset = {}
 
     for dataElement in firstDataset:
