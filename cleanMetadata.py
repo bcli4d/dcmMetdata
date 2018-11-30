@@ -37,7 +37,7 @@ def stringifyList(args, dataElement):
     value = value.rstrip(',')
     return value
 
-def cleanValue(dataElement):
+def cleanValue(args,dataElement):
     value = dataElement.value
 
     if dataElement.VM > 1:

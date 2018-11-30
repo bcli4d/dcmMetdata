@@ -1,8 +1,6 @@
 from __future__ import print_function
-import pydicom
 import os, sys
 import json
-import time
 
 
 # Build a list of keywords
@@ -10,10 +8,10 @@ def loadKeywords(args):
     if os.path.exists(args.keywords):
         with open(args.keywords) as f:
             strings = f.read().splitlines()
-            keywords = set(strings)
+            keywords = list(strings)
             print("keywords {}".format(keywords))
     else:
-        keywords = set()
+        keywords = []
     return keywords
 
 # Build a list of ignored keywords
@@ -21,10 +19,10 @@ def loadIgnoredKeywords(args):
     if os.path.exists(args.ignoredKeywords):
         with open(args.ignoredKeywords) as f:
             strings = f.read().splitlines()
-            ignoredKeywords = set(strings)
+            ignoredKeywords = list(strings)
             print("ignoredKeywords {}".format(ignoredKeywords))
     else:
-        ignoredKeywords = set()
+        ignoredKeywords = []
     return ignoredKeywords
 
 
@@ -49,7 +47,7 @@ def loadDones(args):
         with open(args.dones) as f:
             strings = f.read().splitlines()
             dones = set(strings)
-            print("dones {}".format(dones))
+            #print("dones {}".format(dones))
     else:
         dones = set()
     return dones
@@ -69,7 +67,7 @@ def loadIgnoredTypes(args):
 def loadZips(args):
     with open(args.zips) as f:
         strings = f.read().splitlines()
-        zips = set(strings)
-        print("zips: {}".format(zips))
+        zips = sorted(list(strings))
+        #print("zips: {}".format(zips))
     return zips
 

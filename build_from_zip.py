@@ -82,7 +82,7 @@ def appendDones(args, zip):
 # Add the data of am element to the dataset dictionary after cleaning
 def addToDataset(args, dataset, dataElement, keyword):
     if not dataElement.VR in ignoredTypes:
-        cleanedValue = cleanValue(dataElement)
+        cleanedValue = cleanValue(args, dataElement)
         dataset[keyword] = cleanedValue
 #What else?
 
@@ -127,27 +127,23 @@ def processSeries(args, zip):
     for dataElement in firstDataset:
         try:
             keyword = pydicom.datadict.dictionary_keyword(dataElement.tag)
-            if not keyword in ignoredKeywords:
-                try:
-                    if dataElement.value == lastDataset[dataElement.tag].value:
-                        addKeyword(args, keyword)
-                        addToDataset(args, dataset, dataElement, keyword)
-                    else:
-                        if args.verbosity > 1:
-                            print("New ignored {}".format(keyword))
-                        ignoreKeyword(args, keyword)
-                except:
-                    print("Instances in {} have different schemas".format(zipFileName))
-                    return
-            else:
-                if args.verbosity > 2:
-                    print("Ignoring {}".format(keyword))
-
         except:
             if args.verbosity > 2:
-                print("Ignoring tag {}; not in dictionary".format(dataElement.tag))
-
-    appendMetadata(args, zip, dataset)
+                print("Ignoring keyword {}; not in dictionary".format(dataElement.tag))
+        else:
+            appendKeyword(args, keyword)
+            if args.verbosity > 1:
+                print("Adding keyword {}".format(keyword))
+            addToDataset(args, dataset, dataElement, keyword)
+            try:
+                if dataElement.value != lastDataset[dataElement.tag].value:
+                    if args.verbosity > 1:
+                        appendIgnoredKeyword(args, keyword)
+                        print("New ignored keyword {}".format(keyword))
+            except:
+                print("Instances in {} have different schemas".format(zipFileName))
+                return
+        appendMetadata(args, zip, dataset)
     appendDones(args, zip)
     cleanupSeries(args)
 
