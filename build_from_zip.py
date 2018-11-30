@@ -112,6 +112,16 @@ def cleanupSeries(args):
 
 
 # Create a dictionary of metadata for a single series
+def loadDataSet(args, zipFilesPath, dicom):
+    ds = pydicom.read_file(os.path.join(zipFilesPath, dicom), stop_before_pixels=True)
+    # Some DICOM instance files have an invalid encoding.
+    if ds.SpecificCharacterSet == 'ISO_IR100':
+        ds.SpecificCharacterSet = 'ISO_IR 100'
+        ds.save_as('temporary.dcm')
+        ds = pydicom.read_file('temporary.dcm')
+    return ds
+
+
 def processSeries(args, zip, keywords, ignoredKeywords):
     zipFilesPath = getZipFromGCS(args, zip)
 
@@ -123,13 +133,19 @@ def processSeries(args, zip, keywords, ignoredKeywords):
     # not identical. Those tags are added to the notUniqueTags file.
     # Series for which there is just a single instance are treated as if all tags are
     # unique.
-    firstDataset = pydicom.read_file(os.path.join(zipFilesPath,dicoms[0]), stop_before_pixels=True)
-    lastDataset = pydicom.read_file(os.path.join(zipFilesPath,dicoms[-1]), stop_before_pixels=True)
+
+
+
+
+    firstDataset = loadDataSet(args, zipFilesPath, dicoms[0])
+    lastDataset = loadDataSet(args, zipFilesPath, dicoms[1])
+
+
     dataset = {}
 
     for dataElement in firstDataset:
         try:
-            keyword = pydicom.datadict.dictionary_keyword(dataElement.tag)
+             keyword = dataElement.keyword
         except:
             if args.verbosity > 2:
                 print("Ignoring keyword {}; not in dictionary".format(dataElement.tag))
@@ -145,7 +161,7 @@ def processSeries(args, zip, keywords, ignoredKeywords):
                         print("New ignored keyword {}".format(keyword))
             except:
                 print("New ignored keyword {}; not in all instances".format(keyword))
-                return
+                ignoredKeywords = addIgnoredKeyword(args, keyword, ignoredKeywords)
     appendMetadata(args, zip, dataset)
     writeKeywords(args, keywords)
     writeIgnoredKeywords(args, ignoredKeywords)
