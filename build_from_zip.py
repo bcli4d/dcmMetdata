@@ -29,28 +29,31 @@ series = []
 
 
 # Record in file of all keywords encountered
-def appendKeyword(args, keyword):
-    with open(args.keywords, 'a') as f:
-        f.write("{}\n".format(keyword))
+def writeKeywords(args, keywords):
+    with open(args.keywords, 'w') as f:
+        f.write(json.dumps(keywords).encode())
 
 # Add every keyword seen to set of keywords
-def addKeyword(args,keyword):
+def addKeyword(args,keyword, keywords):
     if not keyword in keywords:
-        keywords.add(keyword)
-        appendKeyword(args, keyword)
-
+        keywords[keyword] = 1
+    else:
+        keywords[keyword] += 1
+    return keywords
 
 # Record in file of keywords to be ignored
-def appendIgnoredKeyword(args, keyword):
-    with open(args.ignoredKeywords, 'a') as f:
-        f.write("{}\n".format(keyword))
+def writeIgnoredKeywords(args, ignoreKeywords):
+    with open(args.ignoredKeywords, 'w') as f:
+        f.write(json.dumps(ignoredKeywords).encode())
 
 # Found another keyword to ignore, typically because instances in a series may have different values for this element
-def ignoreKeyword(args,keyword):
+def addIgnoredKeyword(args,ignoredKeyword, ignoredKeywords):
     #    keywords.remove(keyword)
-    if not keyword in ignoredKeywords:
-        ignoredKeywords.add(keyword)
-        appendIgnoredKeyword(args, keyword)
+    if not ignoredKeyword in ignoredKeywords:
+        ignoredKeywords[ignoredKeyword] = 1
+    else:
+        ignoredKeywords[ignoredKeyword] += 1
+    return ignoredKeywords
 
 # Append metadata collected for a series to the metadata file
 def appendMetadata(args, zip, dataset):
@@ -109,7 +112,7 @@ def cleanupSeries(args):
 
 
 # Create a dictionary of metadata for a single series
-def processSeries(args, zip):
+def processSeries(args, zip, keywords, ignoredKeywords):
     zipFilesPath = getZipFromGCS(args, zip)
 
     dicoms = os.listdir(zipFilesPath)
@@ -131,30 +134,32 @@ def processSeries(args, zip):
             if args.verbosity > 2:
                 print("Ignoring keyword {}; not in dictionary".format(dataElement.tag))
         else:
-            appendKeyword(args, keyword)
-            if args.verbosity > 1:
+            keywords = addKeyword(args, keyword, keywords)
+            if args.verbosity > 2:
                 print("Adding keyword {}".format(keyword))
             addToDataset(args, dataset, dataElement, keyword)
             try:
                 if dataElement.value != lastDataset[dataElement.tag].value:
-                    if args.verbosity > 1:
-                        appendIgnoredKeyword(args, keyword)
+                    ignoredKeywords = addIgnoredKeyword(args, keyword, ignoredKeywords)
+                    if args.verbosity > 2:
                         print("New ignored keyword {}".format(keyword))
             except:
                 print("Instances in {} have different schemas".format(zipFileName))
                 return
-        appendMetadata(args, zip, dataset)
+    appendMetadata(args, zip, dataset)
+    writeKeywords(args, keywords)
+    writeIgnoredKeywords(args, ignoredKeywords)
     appendDones(args, zip)
     cleanupSeries(args)
 
 
 # Extract metadata from specified set of files in GCS
-def scanZips(args):
+def scanZips(args, keywords, ignoredKeywords):
 
     for zip in zips:
         global zipFileCount
         if not zip in series:
-            processSeries(args, zip)
+            processSeries(args, zip, keywords, ignoredKeywords)
             zipFileCount += 1
         else:
             if args.verbosity > 1:
@@ -181,7 +186,7 @@ def parse_args():
                         default='./keywords.txt')
     parser.add_argument("-i", "--ignoredKeywords", type=str,
                         help="path to file containing keywords that are not to be processed",
-                        default='./ignoredkeywords.txt')
+                        default='./ignoredKeywords.txt')
     parser.add_argument("-t", "--ignoredTypes", type=str, help="path to file containing element types to be ignored",
                         default='./ignoredTypes.txt')
     parser.add_argument("-m", "--metadata", type=str, help="path to file containing extracted metadata",
@@ -202,7 +207,7 @@ if __name__ == '__main__':
     keywords, ignoredKeywords, ignoredTypes, series, zips = setup(args)
 
     t0 = time.time()
-    fileCount = scanZips(args)
+    fileCount = scanZips(args, keywords, ignoredKeywords)
     t1 = time.time()
 
     if args.verbosity > 0:

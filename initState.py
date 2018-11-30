@@ -8,10 +8,10 @@ def loadKeywords(args):
     if os.path.exists(args.keywords):
         with open(args.keywords) as f:
             strings = f.read().splitlines()
-            keywords = list(strings)
+            keywords = json.loads(strings[0])
             print("keywords {}".format(keywords))
     else:
-        keywords = []
+        keywords = {}
     return keywords
 
 # Build a list of ignored keywords
@@ -19,10 +19,10 @@ def loadIgnoredKeywords(args):
     if os.path.exists(args.ignoredKeywords):
         with open(args.ignoredKeywords) as f:
             strings = f.read().splitlines()
-            ignoredKeywords = list(strings)
+            ignoredKeywords = json.loads(strings[0])
             print("ignoredKeywords {}".format(ignoredKeywords))
     else:
-        ignoredKeywords = []
+        ignoredKeywords = {}
     return ignoredKeywords
 
 
