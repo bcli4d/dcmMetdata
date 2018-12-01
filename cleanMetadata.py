@@ -22,7 +22,7 @@ def clean_PatientSex(t):
     return t
 
 def cleanAT(value):
-    value = ''
+    value = str(value)
     return value
 
 def clean_PatientWeight(t):
@@ -44,7 +44,7 @@ def cleanValue(args,dataElement):
         value = stringifyList(args,dataElement)
     elif dataElement.VR == 'LT':
         value = remove_crlf(value)
-    elif dataElement.VR == 'AT' and dataElement.VM == 0:
+    elif dataElement.VR == 'AT':
         value = cleanAT(value)
     elif dataElement.VR == 'FL':
         value = str(value)
