@@ -115,7 +115,7 @@ def cleanupSeries(args):
 def loadDataSet(args, zipFilesPath, dicom):
     ds = pydicom.read_file(os.path.join(zipFilesPath, dicom), stop_before_pixels=True)
     # Some DICOM instance files have an invalid encoding.
-    if ds.SpecificCharacterSet == 'ISO_IR100':
+    if pydicom.tag.BaseTag(0x00080005) in ds and ds.SpecificCharacterSet == 'ISO_IR100':
         ds.SpecificCharacterSet = 'ISO_IR 100'
         ds.save_as('temporary.dcm')
         ds = pydicom.read_file('temporary.dcm')
