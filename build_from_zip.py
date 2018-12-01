@@ -138,7 +138,7 @@ def processSeries(args, zip, keywords, ignoredKeywords):
 
 
     firstDataset = loadDataSet(args, zipFilesPath, dicoms[0])
-    lastDataset = loadDataSet(args, zipFilesPath, dicoms[1])
+    lastDataset = loadDataSet(args, zipFilesPath, dicoms[-1])
 
 
     dataset = {}
